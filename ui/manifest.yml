@@ -1,0 +1,19 @@
+---
+applications:
+  - name: bosch-demo-ui
+    memory: 64M
+    buildpack: nodejs_buildpack
+    command: node server/app.js
+    path: dist
+    services:
+          - predix-uaa
+          - predix-timeseries
+          - ppm-connector
+          - analytics
+env:
+    node_env: cloud
+    # Add these values for authentication in the cloud
+    clientId: timeseries_client_readonly
+    base64ClientCredential: dGltZXNlcmllc19jbGllbnRfcmVhZG9ubHk6dGltZXNlcmllcy1jbGllbnQtcmVhZG9ubHktc2VjcmV0
+    restClientId: rest_client
+    base64RestClientCredential: cmVzdF9jbGllbnQ6cmVzdC1jbGllbnQtc2VjcmV0

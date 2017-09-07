@@ -1,0 +1,14 @@
+---
+applications:
+- name: analytics_demo_bosch
+  memory: 512M
+  buildpack: https://github.com/heroku/heroku-buildpack-python.git
+  command:  python app.py
+  services:
+    - predix-uaa
+    - predix-timeseries
+env:
+  node_env: cloud
+  clientId: bosch-client
+  base64ClientCredential: Ym9zY2gtY2xpZW50OmJvc2NoLXBhc3N3b3Jk
+  timeWindow: 2 #In seconds

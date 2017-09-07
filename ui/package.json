@@ -1,0 +1,44 @@
+{
+	"name": "bcx17-ui",
+	"version": "0.1.0",
+	"private": true,
+	"engines": {
+		"node": ">=0.10.0"
+	},
+	"scripts": {
+		"start": "node server/app.js"
+	},
+	"devDependencies": {
+		"eslint-plugin-html": "2.0.x",
+		"gulp": "3.9.x",
+		"gulp-autoprefixer": "3.1.x",
+		"gulp-clean": "0.3.x",
+		"gulp-cssmin": "0.1.x",
+		"gulp-eslint": "3.0.x",
+		"gulp-html-minifier": "0.1.x",
+		"gulp-inline-source": "3.0.x",
+		"gulp-nodemon": "2.0.x",
+		"gulp-rename": "1.2.x",
+		"gulp-sass": "3.1.x",
+		"gulp-sequence": "0.4.x",
+		"gulp-style-modules": "0.1.x",
+		"gulp-util": "3.0.x",
+		"gulp-vulcanize": "6.1.x",
+		"merge-stream": "1.0.x",
+		"node-sass-import-once": "1.2.x"
+	},
+	"dependencies": {
+		"body-parser": "1.15.x",
+		"cfenv": "1.0.x",
+		"compression": "1.6.x",
+		"cookie-parser": "1.4.x",
+		"express": "4.14.x",
+		"express-http-proxy": "0.11.x",
+		"express-session": "1.14.x",
+		"https-proxy-agent": "1.0.x",
+		"passport": "0.3.x",
+		"passport-oauth2-middleware": "1.0.x",
+		"passport-predix-oauth": "0.1.x",
+		"request": "2.79.x"
+	}
+}

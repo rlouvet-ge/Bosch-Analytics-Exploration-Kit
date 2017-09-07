@@ -1,0 +1,7 @@
+Flask
+requests
+flask-cors
+websocket-client
+scikit-learn
+pandas
+scipy

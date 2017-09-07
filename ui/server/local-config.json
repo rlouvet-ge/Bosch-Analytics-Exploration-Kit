@@ -1,0 +1,49 @@
+{
+	"development": {
+		"clientId": "timeseries_client_readonly",
+		"base64ClientCredential": "dGltZXNlcmllc19jbGllbnRfcmVhZG9ubHk6dGltZXNlcmllcy1jbGllbnQtcmVhZG9ubHktc2VjcmV0",
+		"restClientId": "rest_client",
+		"base64RestClientCredential": "cmVzdF9jbGllbnQ6cmVzdC1jbGllbnQtc2VjcmV0",
+		"serverPort": 5000,
+		"vcap": {
+			"services": {
+				"predix-timeseries": [
+					{
+						"name": "timeseries-service",
+						"label": "predix-timeseries",
+						"credentials": {
+							"query": {
+								"uri": "https://time-series-store-predix.run.aws-usw02-pr.ice.predix.io/v1/datapoints",
+								"zone-http-header-name": "Predix-Zone-Id",
+								"zone-http-header-value": "f7b1825e-a915-4a45-b9db-ed925cdb1419"
+							}
+						}
+					}
+				],
+				"predix-uaa": [
+					{
+						"name": "uaa-service",
+						"label": "predix-uaa",
+						"credentials": {
+							"uri": "https://bosch-demo.predix-uaa.run.aws-usw02-pr.ice.predix.io"
+						}
+					}
+				],
+				"user-provided": [
+					{
+						"name": "analytics",
+						"credentials": {
+							"uri": "https://analytics-demo-bosch.run.aws-usw02-pr.ice.predix.io"
+						}
+					},
+					{
+						"name": "ppm-connector",
+						"credentials": {
+							"uri": "https://demo-ppm-connector.run.aws-usw02-pr.ice.predix.io/api"
+						}
+					}
+				]
+			}
+		}
+	}
+}

@@ -1,0 +1,213 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/px-vis-timeseries/px-vis-timeseries.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/px-dropdown/px-dropdown.html" />
+<link rel="import" href="../../bower_components/px-toggle/px-toggle.html" />
+<link rel="import" href="../../bower_components/px-alert-message/px-alert-message.html" />
+
+
+<!--
+import is done in ge-app since it is needed by both views
+<link rel="import" href="../../bower_components/px-card/px-card.html">
+-->
+<dom-module id="view-1">
+	<template>
+		<template is="dom-if" if="{{alert}}">
+			<px-alert-message
+				id="alert-filter"
+				type="important"
+				message-title="Alert!"
+				message="[[alertMessage]]"
+				action="dismiss"
+				language="en">
+			</px-alert-message>
+		</template>
+		<px-card header-text="TIMESERIES DATA">
+			<div>Auto-Refresh</div>
+			<div>
+				<px-toggle size="small" checked="{{autoRefresh}}"></px-toggle>
+			</div>
+
+			<px-vis-timeseries
+				width="800"
+				height="300"
+				prevent-resize="true"
+				enable-tooltip="true"
+				register-location="none"
+				include-all-series
+				series-config="[[tsConfig]]"
+				selection-type="xy"
+				chart-data="[[tsChartData]]">
+			</px-vis-timeseries>
+		</px-card>
+
+
+	</template>
+	<script>
+
+		"use strict";
+
+		(function () {
+
+			function parseJson(response) {
+				if (!response.ok) {
+					throw response;
+				}
+				return response.json();
+			}
+
+			Polymer({
+				is: "view-1",
+				properties: {
+					currentTag: {
+						type: String,
+						value: "SimsterFilterA:filterOpening:none"
+					},
+					tags: Array,
+					tsConfig: Object,
+					tsChartData: Array,
+					autoRefresh: {
+						type: Boolean,
+						value: function () {
+							return false;
+						}
+					},
+					intervalId: String,
+					alert: {
+						type: Boolean,
+						value: function () {
+							return false;
+						}
+					},
+					alertMessage: String
+				},
+				ready: function () {
+					var self = this;
+
+					document.addEventListener("iron-change", function () {
+						self._updateTsData();
+					}, false);
+
+					self._getTsData();
+					self._monitorAlerts();
+				},
+				_getDatapoints: function () {
+					return fetch("/api/predix-timeseries/v1/datapoints", {
+						credentials: "same-origin",
+						method: "POST",
+						body: new Blob([
+							JSON.stringify({
+								start: "7d-ago",
+								tags: [
+									{
+										name: this.currentTag,
+										order: "desc",
+										limit: 50000 // eslint-disable-line no-magic-numbers
+									}
+								]
+							})
+						], {type: "application/json"})
+					})
+						.then(parseJson);
+				},
+				_getTsData: function () {
+					var self = this;
+
+					self._getDatapoints()
+						.then(function (tsData) {
+							var results = tsData.tags[0].results[0];
+							var deviceTypeId = results.attributes.DeviceTypeId[0];
+							var measurementPointId = results.attributes.MeasurementPointId[0];
+							var datapoints = results.values;
+							var serie = [];
+							var config = {
+								serie: {
+									type: "line",
+									x: "x",
+									y: "y0"
+								}
+							};
+
+							// Datapoints
+							datapoints.reverse();
+							datapoints.forEach(function (point) {
+								serie.push({
+									x: point[0],
+									y0: point[1]
+								});
+							});
+
+							fetch("/api/ppm-connector/v1/devicetypes/" + deviceTypeId, {
+								credentials: "same-origin"
+							})
+								.then(parseJson)
+								.then(function (deviceInfo) {
+									var info = deviceInfo.measurementPoints.find(function (measurementPoint) {
+										return measurementPoint.measurementPointId === measurementPointId;
+									});
+
+									if (info) {
+										config.serie.yAxisUnit = info.unit.symbol;
+										config.serie.name = info.name;
+									}
+									self.tsConfig = config;
+									self.tsChartData = serie;
+								});
+						});
+
+				},
+				_updateTsData: function () {
+					var self = this;
+					var delay = 5000;
+
+					if (self.autoRefresh) {
+						self.intervalId = setInterval(function () {
+							self._getDatapoints()
+								.then(function (tsData) {
+									var results = tsData.tags[0].results[0];
+									var datapoints = results.values;
+									var serie = [];
+
+									// Datapoints
+									datapoints.reverse();
+									datapoints.forEach(function (point) {
+										serie.push({
+											x: point[0],
+											y0: point[1]
+										});
+									});
+									self.tsChartData = serie;
+								});
+						}, delay);
+					} else {
+						clearInterval(self.intervalId);
+					}
+				},
+				_monitorAlerts: function () {
+					var self = this;
+					var delay = 10000;
+
+					setInterval(function () {
+						return fetch("/api/analytics", {
+							credentials: "same-origin",
+							method: "GET"
+						})
+							.then(parseJson)
+							.then(function (result) {
+								var alertFilter = document.getElementById("alert-filter");
+
+								self.alert = result.status === "KO";
+								if (self.alert) {
+									self.alertMessage = "The filter opening will be too small in " + result.time +
+										" secondes";
+									alertFilter._show();
+								} else if (alertFilter) {
+									alertFilter._dismiss();
+								}
+							});
+					}, delay);
+				}
+			});
+		}());
+	</script>
+</dom-module>
